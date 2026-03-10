@@ -7,7 +7,7 @@
 ```bash
 pnpm install
 pnpm build
-node dist/index.js help
+node dist/index.js --help
 ```
 
 For local shell usage during development:
