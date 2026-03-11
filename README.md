@@ -40,13 +40,13 @@ of list available --filter '{"tags":["work","home"],"planned":{"before":"2026-03
 
 ## JSON / NDJSON
 
-- Output: `--json` or `--ndjson`
-- Input payloads: `--json '<payload>'` (per command)
+- Output: `--format table|json|ndjson`
+- Input payloads: `--input-json '<payload>'` (supported by `create` and `complete`)
 
 Create with JSON input:
 
 ```bash
-of create --json '{"name":"Call Alice","plannedAt":"2026-03-12"}'
+of create --input-json '{"name":"Call Alice","plannedAt":"2026-03-12"}' --format json
 ```
 
 ## Date Semantics

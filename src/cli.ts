@@ -9,17 +9,36 @@ import { CreateTaskInput, TaskBucket, TaskFilter } from "./types";
 
 const buckets = new Set<TaskBucket>(["available", "remaining", "inbox", "completed", "dropped", "all"]);
 
-function validateStrictFlags(rawArgs: string[], argsDef: Record<string, { type?: "boolean" | "string" | "positional" }>): void {
-  const allowed = new Set(Object.keys(argsDef));
+type ArgShape = { type?: "boolean" | "string" | "enum" | "positional"; alias?: string | string[] };
+
+function warnUnknownFlags(rawArgs: string[], argsDef: Record<string, ArgShape>): void {
+  const byName = new Map<string, ArgShape>();
+  for (const [name, shape] of Object.entries(argsDef)) {
+    byName.set(name, shape);
+  }
+
+  const allowed = new Set(byName.keys());
+  for (const definition of Object.values(argsDef)) {
+    const aliases = definition.alias ? (Array.isArray(definition.alias) ? definition.alias : [definition.alias]) : [];
+    for (const alias of aliases) {
+      allowed.add(alias);
+      if (!byName.has(alias)) {
+        byName.set(alias, definition);
+      }
+    }
+  }
+
   const booleanFlags = new Set(
-    Object.entries(argsDef)
+    Array.from(byName.entries())
       .filter(([, def]) => def.type === "boolean")
       .map(([name]) => name)
   );
 
+  const unknown = new Set<string>();
+
   for (const token of rawArgs) {
     if (token === "--") {
-      return;
+      break;
     }
 
     if (token.startsWith("--")) {
@@ -30,57 +49,43 @@ function validateStrictFlags(rawArgs: string[], argsDef: Record<string, { type?:
       const isNo = longToken.startsWith("no-");
       const key = isNo ? longToken.slice(3) : longToken;
       if (!allowed.has(key) || (isNo && !booleanFlags.has(key))) {
-        fail("E_USAGE", `Unknown option --${longToken}`);
+        unknown.add(`--${longToken}`);
       }
       continue;
     }
 
     if (token.startsWith("-") && token.length > 1) {
-      fail("E_USAGE", `Unknown option ${token}`);
+      unknown.add(token);
     }
+  }
+
+  if (unknown.size > 0) {
+    const values = Array.from(unknown);
+    process.stderr.write(`W_USAGE: ignoring unknown option${values.length > 1 ? "s" : ""} ${values.join(", ")}\n`);
   }
 }
 
-function parseOutputAndInput(rawArgs: string[]): { outputMode: OutputMode; inputJson?: unknown } {
-  let outputMode: OutputMode = "table";
-  let inputJson: unknown;
-
-  for (let i = 0; i < rawArgs.length; i += 1) {
-    const arg = rawArgs[i];
-    if (!arg) {
-      continue;
-    }
-
-    if (arg === "--json") {
-      const next = rawArgs[i + 1];
-      if (next && !next.startsWith("--")) {
-        try {
-          inputJson = JSON.parse(next);
-        } catch {
-          fail("E_USAGE", "Invalid JSON passed to --json");
-        }
-        i += 1;
-      } else {
-        outputMode = "json";
-      }
-      continue;
-    }
-
-    if (arg.startsWith("--json=")) {
-      try {
-        inputJson = JSON.parse(arg.slice("--json=".length));
-      } catch {
-        fail("E_USAGE", "Invalid JSON passed to --json");
-      }
-      continue;
-    }
-
-    if (arg === "--ndjson") {
-      outputMode = "ndjson";
-    }
+function parseOutputMode(args: Record<string, unknown>): OutputMode {
+  const format = args.format;
+  if (format === "json" || format === "ndjson" || format === "table") {
+    return format;
   }
+  return "table";
+}
 
-  return { outputMode, inputJson };
+function parseInputJson(args: Record<string, unknown>): unknown {
+  const raw = args["input-json"];
+  if (raw === undefined) {
+    return undefined;
+  }
+  if (typeof raw !== "string") {
+    fail("E_USAGE", "Invalid JSON passed to --input-json");
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    fail("E_USAGE", "Invalid JSON passed to --input-json");
+  }
 }
 
 function resolveName(args: Record<string, unknown>, positionalKey: string): string | undefined {
@@ -90,11 +95,16 @@ function resolveName(args: Record<string, unknown>, positionalKey: string): stri
 
 async function runWithIo(
   rawArgs: string[],
-  argsDef: Record<string, { type?: "boolean" | "string" | "positional" }>,
+  args: Record<string, unknown>,
+  argsDef: Record<string, ArgShape>,
+  withInputJson: boolean,
   run: (io: { outputMode: OutputMode; inputJson?: unknown }) => Promise<void>
 ): Promise<void> {
-  validateStrictFlags(rawArgs, argsDef);
-  const io = parseOutputAndInput(rawArgs);
+  warnUnknownFlags(rawArgs, argsDef);
+  const io = {
+    outputMode: parseOutputMode(args),
+    inputJson: withInputJson ? parseInputJson(args) : undefined,
+  };
   await run(io);
 }
 
@@ -130,10 +140,9 @@ function mergeListFilter(args: Record<string, unknown>): TaskFilter {
   };
 }
 
-function parseCreateInput(args: Record<string, unknown>, rawArgs: string[], namePositional?: string): CreateTaskInput {
-  const io = parseOutputAndInput(rawArgs);
-  if (io.inputJson && typeof io.inputJson === "object") {
-    const payload = io.inputJson as Partial<CreateTaskInput>;
+function parseCreateInput(args: Record<string, unknown>, namePositional?: string, inputJson?: unknown): CreateTaskInput {
+  if (inputJson && typeof inputJson === "object") {
+    const payload = inputJson as Partial<CreateTaskInput>;
     if (!payload.name) {
       fail("E_USAGE", "create JSON payload requires 'name'");
     }
@@ -169,9 +178,12 @@ function parseCreateInput(args: Record<string, unknown>, rawArgs: string[], name
   };
 }
 
-const commonOutputArgs = {
-  json: { type: "string" as const },
-  ndjson: { type: "boolean" as const },
+const formatArg = {
+  format: {
+    type: "enum" as const,
+    options: ["table", "json", "ndjson"],
+    default: "table",
+  },
 };
 
 const listArgsDef = {
@@ -181,12 +193,13 @@ const listArgsDef = {
   "planned-on": { type: "string" as const },
   "planned-before": { type: "string" as const },
   "planned-after": { type: "string" as const },
-  ...commonOutputArgs,
+  ...formatArg,
 };
 
 const createArgsDef = {
   namePositional: { type: "positional" as const, required: false },
   name: { type: "string" as const },
+  "input-json": { type: "string" as const },
   note: { type: "string" as const },
   flagged: { type: "boolean" as const },
   project: { type: "string" as const },
@@ -194,32 +207,33 @@ const createArgsDef = {
   defer: { type: "string" as const },
   planned: { type: "string" as const },
   due: { type: "string" as const },
-  ...commonOutputArgs,
+  ...formatArg,
 };
 
 const completeArgsDef = {
   namePositional: { type: "positional" as const, required: false },
+  "input-json": { type: "string" as const },
   id: { type: "string" as const },
   name: { type: "string" as const },
   "dry-run": { type: "boolean" as const },
   yes: { type: "boolean" as const },
-  ...commonOutputArgs,
+  ...formatArg,
 };
 
 const createNameArgsDef = {
   namePositional: { type: "positional" as const, required: false },
   name: { type: "string" as const },
-  ...commonOutputArgs,
+  ...formatArg,
 };
 
 const updateNameArgsDef = {
   id: { type: "string" as const },
   name: { type: "string" as const },
-  ...commonOutputArgs,
+  ...formatArg,
 };
 
 const listOnlyArgsDef = {
-  ...commonOutputArgs,
+  ...formatArg,
 };
 
 export const mainCommand = defineCommand({
@@ -232,7 +246,7 @@ export const mainCommand = defineCommand({
       meta: { name: "list", description: "List tasks" },
       args: listArgsDef,
       async run(ctx) {
-        await runWithIo(ctx.rawArgs, listArgsDef, async ({ outputMode }) => {
+        await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, listArgsDef, false, async ({ outputMode }) => {
           const bucketRaw = typeof ctx.args.bucket === "string" ? ctx.args.bucket : undefined;
           const bucket = bucketRaw && buckets.has(bucketRaw as TaskBucket) ? (bucketRaw as TaskBucket) : "available";
           const tasks = await listTasks(bucket);
@@ -246,8 +260,8 @@ export const mainCommand = defineCommand({
       meta: { name: "create", description: "Create task" },
       args: createArgsDef,
       async run(ctx) {
-        await runWithIo(ctx.rawArgs, createArgsDef, async ({ outputMode }) => {
-          const input = parseCreateInput(ctx.args as Record<string, unknown>, ctx.rawArgs, ctx.args.namePositional);
+        await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, createArgsDef, true, async ({ outputMode, inputJson }) => {
+          const input = parseCreateInput(ctx.args as Record<string, unknown>, ctx.args.namePositional, inputJson);
           const task = await createTask(input);
           printOutput(task, outputMode);
         });
@@ -257,7 +271,7 @@ export const mainCommand = defineCommand({
       meta: { name: "complete", description: "Complete task(s)" },
       args: completeArgsDef,
       async run(ctx) {
-        await runWithIo(ctx.rawArgs, completeArgsDef, async ({ outputMode, inputJson }) => {
+        await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, completeArgsDef, true, async ({ outputMode, inputJson }) => {
           const idsRaw = typeof ctx.args.id === "string" ? ctx.args.id : undefined;
           let targetIds = idsRaw
             ? idsRaw
@@ -328,7 +342,7 @@ export const mainCommand = defineCommand({
           meta: { name: "list", description: "List projects" },
           args: listOnlyArgsDef,
           async run(ctx) {
-            await runWithIo(ctx.rawArgs, listOnlyArgsDef, async ({ outputMode }) => {
+            await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, listOnlyArgsDef, false, async ({ outputMode }) => {
               printOutput(await listProjects(), outputMode);
             });
           },
@@ -337,7 +351,7 @@ export const mainCommand = defineCommand({
           meta: { name: "create", description: "Create project" },
           args: createNameArgsDef,
           async run(ctx) {
-            await runWithIo(ctx.rawArgs, createNameArgsDef, async ({ outputMode }) => {
+            await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, createNameArgsDef, false, async ({ outputMode }) => {
               const name = resolveName(ctx.args as Record<string, unknown>, "namePositional");
               if (!name) {
                 fail("E_USAGE", "projects create requires --name <value>");
@@ -350,7 +364,7 @@ export const mainCommand = defineCommand({
           meta: { name: "update", description: "Update project" },
           args: updateNameArgsDef,
           async run(ctx) {
-            await runWithIo(ctx.rawArgs, updateNameArgsDef, async ({ outputMode }) => {
+            await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, updateNameArgsDef, false, async ({ outputMode }) => {
               const id = typeof ctx.args.id === "string" ? ctx.args.id : undefined;
               const name = typeof ctx.args.name === "string" ? ctx.args.name : undefined;
               if (!id || !name) {
@@ -373,7 +387,7 @@ export const mainCommand = defineCommand({
           meta: { name: "list", description: "List tags" },
           args: listOnlyArgsDef,
           async run(ctx) {
-            await runWithIo(ctx.rawArgs, listOnlyArgsDef, async ({ outputMode }) => {
+            await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, listOnlyArgsDef, false, async ({ outputMode }) => {
               printOutput(await listTags(), outputMode);
             });
           },
@@ -382,7 +396,7 @@ export const mainCommand = defineCommand({
           meta: { name: "create", description: "Create tag" },
           args: createNameArgsDef,
           async run(ctx) {
-            await runWithIo(ctx.rawArgs, createNameArgsDef, async ({ outputMode }) => {
+            await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, createNameArgsDef, false, async ({ outputMode }) => {
               const name = resolveName(ctx.args as Record<string, unknown>, "namePositional");
               if (!name) {
                 fail("E_USAGE", "tags create requires --name <value>");
@@ -395,7 +409,7 @@ export const mainCommand = defineCommand({
           meta: { name: "update", description: "Update tag" },
           args: updateNameArgsDef,
           async run(ctx) {
-            await runWithIo(ctx.rawArgs, updateNameArgsDef, async ({ outputMode }) => {
+            await runWithIo(ctx.rawArgs, ctx.args as Record<string, unknown>, updateNameArgsDef, false, async ({ outputMode }) => {
               const id = typeof ctx.args.id === "string" ? ctx.args.id : undefined;
               const name = typeof ctx.args.name === "string" ? ctx.args.name : undefined;
               if (!id || !name) {
