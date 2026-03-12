@@ -28,10 +28,12 @@ export type Task = {
 export type Project = {
   id: string;
   name: string;
-  status: string;
+  status: ProjectStatus;
   plannedAt: string | null;
   effectivePlannedAt: string | null;
 };
+
+export type ProjectStatus = "active" | "paused" | "completed" | "dropped";
 
 export type Tag = {
   id: string;

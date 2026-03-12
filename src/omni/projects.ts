@@ -1,22 +1,40 @@
-import { Project } from "../types";
+import { Project, ProjectStatus } from "../types";
 import { jxaString, runJxa } from "./jxa";
 
-export async function listProjects(): Promise<Project[]> {
+export async function listProjects(statuses?: ProjectStatus[]): Promise<Project[]> {
+  const statusesLiteral = JSON.stringify(statuses ?? []);
   return runJxa<Project[]>(`
 const omnifocus = Application("OmniFocus");
 const doc = omnifocus.defaultDocument();
+const selectedStatuses = ${statusesLiteral};
 
 function safeDate(value) {
   return value ? value.toISOString() : null;
 }
 
+function normalizeStatus(value) {
+  const raw = (value || "").toString().toLowerCase();
+  switch (raw) {
+    case "active status":
+      return "active";
+    case "on hold status":
+      return "paused";
+    case "done status":
+      return "completed";
+    case "dropped status":
+      return "dropped";
+    default:
+      return "active";
+  }
+}
+
 const projects = doc.flattenedProjects().map(project => ({
   id: project.id(),
   name: project.name(),
-  status: project.status().toString(),
+  status: normalizeStatus(project.status()),
   plannedAt: safeDate(project.plannedDate()),
   effectivePlannedAt: safeDate(project.effectivePlannedDate())
-}));
+})).filter(project => selectedStatuses.length === 0 || selectedStatuses.includes(project.status));
 
 return JSON.stringify(projects);
 `);
@@ -33,10 +51,26 @@ function safeDate(value) {
   return value ? value.toISOString() : null;
 }
 
+function normalizeStatus(value) {
+  const raw = (value || "").toString().toLowerCase();
+  switch (raw) {
+    case "active status":
+      return "active";
+    case "on hold status":
+      return "paused";
+    case "done status":
+      return "completed";
+    case "dropped status":
+      return "dropped";
+    default:
+      return "active";
+  }
+}
+
 return JSON.stringify({
   id: project.id(),
   name: project.name(),
-  status: project.status().toString(),
+  status: normalizeStatus(project.status()),
   plannedAt: safeDate(project.plannedDate()),
   effectivePlannedAt: safeDate(project.effectivePlannedDate())
 });
@@ -57,10 +91,26 @@ function safeDate(value) {
   return value ? value.toISOString() : null;
 }
 
+function normalizeStatus(value) {
+  const raw = (value || "").toString().toLowerCase();
+  switch (raw) {
+    case "active status":
+      return "active";
+    case "on hold status":
+      return "paused";
+    case "done status":
+      return "completed";
+    case "dropped status":
+      return "dropped";
+    default:
+      return "active";
+  }
+}
+
 return JSON.stringify({
   id: project.id(),
   name: project.name(),
-  status: project.status().toString(),
+  status: normalizeStatus(project.status()),
   plannedAt: safeDate(project.plannedDate()),
   effectivePlannedAt: safeDate(project.effectivePlannedDate())
 });
