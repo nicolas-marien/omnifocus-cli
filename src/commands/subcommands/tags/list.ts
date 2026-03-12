@@ -1,0 +1,20 @@
+import { defineCommand } from "citty";
+import { listTags } from "../../../omni/tags";
+import { printOutput } from "../../../output";
+import { listOnlyArgsDef, runWithIo } from "../../shared";
+
+export const listTagsCommand = defineCommand({
+  meta: { name: "list", description: "List tags" },
+  args: listOnlyArgsDef,
+  async run(ctx) {
+    await runWithIo(
+      ctx.rawArgs,
+      ctx.args as Record<string, unknown>,
+      listOnlyArgsDef,
+      false,
+      async ({ outputMode }) => {
+        printOutput(await listTags(), outputMode);
+      },
+    );
+  },
+});
