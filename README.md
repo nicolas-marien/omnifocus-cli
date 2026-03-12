@@ -13,29 +13,29 @@ node dist/index.js --help
 For local shell usage during development:
 
 ```bash
-pnpm dev -- list
+pnpm dev -- tasks list
 ```
 
 ## Commands
 
 ```bash
-of list [available|remaining|inbox|completed|dropped|all]
-of create --name "Task"
-of complete --id <task-id>
+of tasks list [available|remaining|inbox|completed|dropped|all]
+of tasks create --name "Task"
+of tasks complete --id <task-id>
 of projects list|create|update
 of tags list|create|update
 ```
 
 ## List Defaults
 
-- `of list` defaults to `available`
+- `of tasks list` defaults to `available`
 - `--filter` accepts JSON object criteria
 - `tags` filter is match-any
 
 Example:
 
 ```bash
-of list available --filter '{"tags":["work","home"],"planned":{"before":"2026-03-31"}}'
+of tasks list available --filter '{"tags":["work","home"],"planned":{"before":"2026-03-31"}}'
 ```
 
 ## JSON / NDJSON
@@ -46,7 +46,7 @@ of list available --filter '{"tags":["work","home"],"planned":{"before":"2026-03
 Create with JSON input:
 
 ```bash
-of create --input-json '{"name":"Call Alice","plannedAt":"2026-03-12"}' --format json
+of tasks create --input-json '{"name":"Call Alice","plannedAt":"2026-03-12"}' --format json
 ```
 
 ## Date Semantics
