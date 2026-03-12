@@ -22,8 +22,16 @@ pnpm dev -- tasks list
 of tasks list [available|remaining|inbox|completed|dropped|all]
 of tasks create --name "Task"
 of tasks complete --id <task-id>
-of projects list|create|update
+of projects list [--status active|paused|completed|dropped]
+of projects create|update
 of tags list|create|update
+```
+
+Project status filtering examples:
+
+```bash
+of projects list --status active
+of projects list --status paused,completed
 ```
 
 ## List Defaults
