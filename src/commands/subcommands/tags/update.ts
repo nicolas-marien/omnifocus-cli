@@ -12,11 +12,11 @@ export const updateTagCommand = defineCommand({
       ctx.rawArgs,
       ctx.args as Record<string, unknown>,
       updateNameArgsDef,
-      false,
-      async ({ outputMode }) => {
-        const id = typeof ctx.args.id === "string" ? ctx.args.id : undefined;
-        const name =
-          typeof ctx.args.name === "string" ? ctx.args.name : undefined;
+      true,
+      async ({ outputMode, inputJson }) => {
+        const payload = inputJson && typeof inputJson === "object" ? (inputJson as { id?: string; name?: string }) : undefined;
+        const id = (typeof payload?.id === "string" ? payload.id : undefined) ?? (typeof ctx.args.id === "string" ? ctx.args.id : undefined);
+        const name = (typeof payload?.name === "string" ? payload.name : undefined) ?? (typeof ctx.args.name === "string" ? ctx.args.name : undefined);
         if (!id || !name) {
           fail("E_USAGE", "tags update requires --id <id> --name <value>");
         }

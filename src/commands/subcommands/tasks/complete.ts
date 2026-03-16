@@ -58,10 +58,7 @@ export const completeTasksCommand = defineCommand({
         }
 
         if (targetIds.length === 0) {
-          const nameOrQuery = resolveName(
-            ctx.args as Record<string, unknown>,
-            "namePositional",
-          );
+          const nameOrQuery = resolveName(ctx.args as Record<string, unknown>);
           if (!nameOrQuery) {
             fail(
               "E_USAGE",

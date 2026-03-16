@@ -13,7 +13,7 @@ export const buckets = new Set<TaskBucket>([
 ]);
 
 export const listArgsDef = {
-  bucket: { type: "positional" as const, required: false },
+  status: { type: "string" as const },
   filter: { type: "string" as const },
   effective: { type: "boolean" as const },
   "planned-on": { type: "string" as const },
@@ -23,7 +23,6 @@ export const listArgsDef = {
 };
 
 export const createArgsDef = {
-  namePositional: { type: "positional" as const, required: false },
   name: { type: "string" as const },
   "input-json": { type: "string" as const },
   note: { type: "string" as const },
@@ -37,7 +36,6 @@ export const createArgsDef = {
 };
 
 export const completeArgsDef = {
-  namePositional: { type: "positional" as const, required: false },
   "input-json": { type: "string" as const },
   id: { type: "string" as const },
   name: { type: "string" as const },
@@ -94,7 +92,6 @@ export function mergeListFilter(args: Record<string, unknown>): TaskFilter {
 
 export function parseCreateInput(
   args: Record<string, unknown>,
-  namePositional?: string,
   inputJson?: unknown,
 ): CreateTaskInput {
   if (inputJson && typeof inputJson === "object") {
@@ -114,10 +111,9 @@ export function parseCreateInput(
     };
   }
 
-  const name =
-    (typeof args.name === "string" ? args.name : undefined) ?? namePositional;
+  const name = typeof args.name === "string" ? args.name : undefined;
   if (!name) {
-    fail("E_USAGE", "create requires --name <value> or positional name");
+    fail("E_USAGE", "create requires --name <value>");
   }
 
   const tagsRaw = typeof args.tags === "string" ? args.tags : undefined;
@@ -138,4 +134,15 @@ export function parseCreateInput(
     plannedAt: typeof args.planned === "string" ? args.planned : undefined,
     dueAt: typeof args.due === "string" ? args.due : undefined,
   };
+}
+
+export function parseListStatus(args: Record<string, unknown>): TaskBucket {
+  const raw = typeof args.status === "string" ? args.status.trim().toLowerCase() : "";
+  if (!raw) {
+    return "available";
+  }
+  if (!buckets.has(raw as TaskBucket)) {
+    fail("E_USAGE", "tasks list --status accepts only available, remaining, inbox, completed, dropped, all");
+  }
+  return raw as TaskBucket;
 }

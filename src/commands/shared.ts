@@ -12,14 +12,15 @@ export const formatArg = {
 };
 
 export const createNameArgsDef = {
-  namePositional: { type: "positional" as const, required: false },
   name: { type: "string" as const },
+  "input-json": { type: "string" as const },
   ...formatArg,
 };
 
 export const updateNameArgsDef = {
   id: { type: "string" as const },
   name: { type: "string" as const },
+  "input-json": { type: "string" as const },
   ...formatArg,
 };
 
@@ -27,7 +28,7 @@ export const listOnlyArgsDef = {
   ...formatArg,
 };
 
-function warnUnknownFlags(rawArgs: string[], argsDef: Record<string, ArgShape>): void {
+function failUnknownFlags(rawArgs: string[], argsDef: Record<string, ArgShape>): void {
   const byName = new Map<string, ArgShape>();
   for (const [name, shape] of Object.entries(argsDef)) {
     byName.set(name, shape);
@@ -76,8 +77,8 @@ function warnUnknownFlags(rawArgs: string[], argsDef: Record<string, ArgShape>):
   }
 
   if (unknown.size > 0) {
-    const values = Array.from(unknown);
-    process.stderr.write(`W_USAGE: ignoring unknown option${values.length > 1 ? "s" : ""} ${values.join(", ")}\n`);
+    const values = Array.from(unknown).sort();
+    fail("E_USAGE", `Unknown option${values.length > 1 ? "s" : ""}: ${values.join(", ")}`);
   }
 }
 
@@ -104,9 +105,8 @@ function parseInputJson(args: Record<string, unknown>): unknown {
   }
 }
 
-export function resolveName(args: Record<string, unknown>, positionalKey: string): string | undefined {
-  return (typeof args.name === "string" ? args.name : undefined) ??
-    (typeof args[positionalKey] === "string" ? (args[positionalKey] as string) : undefined);
+export function resolveName(args: Record<string, unknown>): string | undefined {
+  return typeof args.name === "string" ? args.name : undefined;
 }
 
 export async function runWithIo(
@@ -116,7 +116,7 @@ export async function runWithIo(
   withInputJson: boolean,
   run: (io: { outputMode: OutputMode; inputJson?: unknown }) => Promise<void>
 ): Promise<void> {
-  warnUnknownFlags(rawArgs, argsDef);
+  failUnknownFlags(rawArgs, argsDef);
   const io = {
     outputMode: parseOutputMode(args),
     inputJson: withInputJson ? parseInputJson(args) : undefined,

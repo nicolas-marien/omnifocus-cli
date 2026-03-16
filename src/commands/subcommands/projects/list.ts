@@ -54,7 +54,7 @@ export const listProjectsCommand = defineCommand({
       listProjectsArgsDef,
       false,
       async ({ outputMode }) => {
-        const statuses = parseStatusFilter(ctx.args.status);
+        const statuses = parseStatusFilter((ctx.args as Record<string, unknown>).status);
         printOutput(await listProjects(statuses), outputMode);
       },
     );

@@ -19,11 +19,11 @@ pnpm dev -- tasks list
 ## Commands
 
 ```bash
-of tasks list [available|remaining|inbox|completed|dropped|all]
+of tasks list [--status available|remaining|inbox|completed|dropped|all]
 of tasks create --name "Task"
 of tasks complete --id <task-id>
 of projects list [--status active|paused|completed|dropped]
-of projects create|update
+of projects create|update|complete|pause|resume|drop
 of tags list|create|update
 ```
 
@@ -43,18 +43,27 @@ of projects list --status paused,completed
 Example:
 
 ```bash
-of tasks list available --filter '{"tags":["work","home"],"planned":{"before":"2026-03-31"}}'
+of tasks list --status available --filter '{"tags":["work","home"],"planned":{"before":"2026-03-31"}}'
 ```
 
 ## JSON / NDJSON
 
 - Output: `--format table|json|ndjson`
-- Input payloads: `--input-json '<payload>'` (supported by `create` and `complete`)
+- Input payloads: `--input-json '<payload>'` (supported by mutating commands)
 
 Create with JSON input:
 
 ```bash
 of tasks create --input-json '{"name":"Call Alice","plannedAt":"2026-03-12"}' --format json
+```
+
+Project lifecycle examples:
+
+```bash
+of projects complete --id <project-id>
+of projects pause --name "Project Name"
+of projects resume --input-json '{"id":"<project-id>"}'
+of projects drop --name "Old Initiative"
 ```
 
 ## Date Semantics

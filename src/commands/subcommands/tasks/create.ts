@@ -14,11 +14,7 @@ export const createTaskCommand = defineCommand({
       createArgsDef,
       true,
       async ({ outputMode, inputJson }) => {
-        const input = parseCreateInput(
-          ctx.args as Record<string, unknown>,
-          ctx.args.namePositional,
-          inputJson,
-        );
+        const input = parseCreateInput(ctx.args as Record<string, unknown>, inputJson);
         const task = await createTask(input);
         printOutput(task, outputMode);
       },

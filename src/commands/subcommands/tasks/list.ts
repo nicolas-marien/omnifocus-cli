@@ -1,10 +1,9 @@
 import { defineCommand } from "citty";
 import { applyFilters } from "../../../filters";
 import { listTasks } from "../../../omni/tasks";
-import { TaskBucket } from "../../../types";
 import { printOutput } from "../../../output";
 import { runWithIo } from "../../shared";
-import { buckets, listArgsDef, mergeListFilter } from "./shared";
+import { listArgsDef, mergeListFilter, parseListStatus } from "./shared";
 
 export const listTasksCommand = defineCommand({
   meta: { name: "list", description: "List tasks" },
@@ -16,12 +15,7 @@ export const listTasksCommand = defineCommand({
       listArgsDef,
       false,
       async ({ outputMode }) => {
-        const bucketRaw =
-          typeof ctx.args.bucket === "string" ? ctx.args.bucket : undefined;
-        const bucket =
-          bucketRaw && buckets.has(bucketRaw as TaskBucket)
-            ? (bucketRaw as TaskBucket)
-            : "available";
+        const bucket = parseListStatus(ctx.args as Record<string, unknown>);
         const tasks = await listTasks(bucket);
         const filter = mergeListFilter(ctx.args as Record<string, unknown>);
         const filtered = applyFilters(
