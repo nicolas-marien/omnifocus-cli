@@ -6,7 +6,7 @@ import { runWithIo } from "../../shared";
 import { projectTargetArgsDef, resolveProjectTargetId } from "./shared";
 
 export const completeProjectCommand = defineCommand({
-  meta: { name: "complete", description: "Complete project" },
+  meta: { name: "complete", description: "Mark a project completed" },
   args: projectTargetArgsDef,
   async run(ctx) {
     await runWithIo(

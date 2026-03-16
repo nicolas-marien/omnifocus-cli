@@ -8,7 +8,7 @@ import { resumeProjectCommand } from "./subcommands/projects/resume";
 import { updateProjectCommand } from "./subcommands/projects/update";
 
 export const projectsCommand = defineCommand({
-  meta: { name: "projects", description: "Manage projects" },
+  meta: { name: "projects", description: "Manage project lifecycle and naming" },
   subCommands: {
     list: listProjectsCommand,
     create: createProjectCommand,

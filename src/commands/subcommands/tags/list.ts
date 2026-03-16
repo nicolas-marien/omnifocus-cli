@@ -4,7 +4,7 @@ import { printOutput } from "../../../output";
 import { listOnlyArgsDef, runWithIo } from "../../shared";
 
 export const listTagsCommand = defineCommand({
-  meta: { name: "list", description: "List tags" },
+  meta: { name: "list", description: "List all tags" },
   args: listOnlyArgsDef,
   async run(ctx) {
     await runWithIo(

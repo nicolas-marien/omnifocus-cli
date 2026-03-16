@@ -5,7 +5,7 @@ import { printOutput } from "../../../output";
 import { createNameArgsDef, resolveName, runWithIo } from "../../shared";
 
 export const createTagCommand = defineCommand({
-  meta: { name: "create", description: "Create tag" },
+  meta: { name: "create", description: "Create a tag" },
   args: createNameArgsDef,
   async run(ctx) {
     await runWithIo(

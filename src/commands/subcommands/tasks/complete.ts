@@ -6,7 +6,7 @@ import { resolveName, runWithIo } from "../../shared";
 import { completeArgsDef, pickCompletionTargets } from "./shared";
 
 export const completeTasksCommand = defineCommand({
-  meta: { name: "complete", description: "Complete task(s)" },
+  meta: { name: "complete", description: "Complete one or more tasks" },
   args: completeArgsDef,
   async run(ctx) {
     await runWithIo(

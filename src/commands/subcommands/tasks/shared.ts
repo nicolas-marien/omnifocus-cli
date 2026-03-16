@@ -13,34 +13,110 @@ export const buckets = new Set<TaskBucket>([
 ]);
 
 export const listArgsDef = {
-  status: { type: "string" as const },
-  filter: { type: "string" as const },
-  effective: { type: "boolean" as const },
-  "planned-on": { type: "string" as const },
-  "planned-before": { type: "string" as const },
-  "planned-after": { type: "string" as const },
+  status: {
+    type: "string" as const,
+    description: "Task bucket to list",
+    valueHint: "available|remaining|inbox|completed|dropped|all",
+  },
+  filter: {
+    type: "string" as const,
+    description: "JSON filter object",
+    valueHint: "json",
+  },
+  effective: {
+    type: "boolean" as const,
+    description: "Use effective dates in date filtering",
+  },
+  "planned-on": {
+    type: "string" as const,
+    description: "Match planned date on exact day",
+    valueHint: "YYYY-MM-DD|datetime",
+  },
+  "planned-before": {
+    type: "string" as const,
+    description: "Match planned date before instant/day",
+    valueHint: "YYYY-MM-DD|datetime",
+  },
+  "planned-after": {
+    type: "string" as const,
+    description: "Match planned date after instant/day",
+    valueHint: "YYYY-MM-DD|datetime",
+  },
   ...formatArg,
 };
 
 export const createArgsDef = {
-  name: { type: "string" as const },
-  "input-json": { type: "string" as const },
-  note: { type: "string" as const },
-  flagged: { type: "boolean" as const },
-  project: { type: "string" as const },
-  tags: { type: "string" as const },
-  defer: { type: "string" as const },
-  planned: { type: "string" as const },
-  due: { type: "string" as const },
+  name: {
+    type: "string" as const,
+    description: "Task name (required unless --input-json is provided)",
+    valueHint: "name",
+  },
+  "input-json": {
+    type: "string" as const,
+    description: "JSON payload for command input",
+    valueHint: "json",
+  },
+  note: {
+    type: "string" as const,
+    description: "Task note",
+    valueHint: "text",
+  },
+  flagged: {
+    type: "boolean" as const,
+    description: "Mark task flagged",
+  },
+  project: {
+    type: "string" as const,
+    description: "Project name to assign",
+    valueHint: "project-name",
+  },
+  tags: {
+    type: "string" as const,
+    description: "Comma-separated tag names",
+    valueHint: "tag1,tag2",
+  },
+  defer: {
+    type: "string" as const,
+    description: "Defer date or datetime",
+    valueHint: "YYYY-MM-DD|datetime",
+  },
+  planned: {
+    type: "string" as const,
+    description: "Planned date or datetime",
+    valueHint: "YYYY-MM-DD|datetime",
+  },
+  due: {
+    type: "string" as const,
+    description: "Due date or datetime",
+    valueHint: "YYYY-MM-DD|datetime",
+  },
   ...formatArg,
 };
 
 export const completeArgsDef = {
-  "input-json": { type: "string" as const },
-  id: { type: "string" as const },
-  name: { type: "string" as const },
-  "dry-run": { type: "boolean" as const },
-  yes: { type: "boolean" as const },
+  "input-json": {
+    type: "string" as const,
+    description: "JSON payload with ids[] or name",
+    valueHint: "json",
+  },
+  id: {
+    type: "string" as const,
+    description: "Task id or comma-separated ids",
+    valueHint: "id[,id]",
+  },
+  name: {
+    type: "string" as const,
+    description: "Task name or name fragment",
+    valueHint: "name",
+  },
+  "dry-run": {
+    type: "boolean" as const,
+    description: "Print target ids without completing",
+  },
+  yes: {
+    type: "boolean" as const,
+    description: "Confirm multi-task completion",
+  },
   ...formatArg,
 };
 

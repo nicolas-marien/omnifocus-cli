@@ -4,7 +4,7 @@ import { listTagsCommand } from "./subcommands/tags/list";
 import { updateTagCommand } from "./subcommands/tags/update";
 
 export const tagsCommand = defineCommand({
-  meta: { name: "tags", description: "Manage tags" },
+  meta: { name: "tags", description: "List, create, and rename tags" },
   subCommands: {
     list: listTagsCommand,
     create: createTagCommand,

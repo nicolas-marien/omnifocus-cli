@@ -6,7 +6,7 @@ import { runWithIo } from "../../shared";
 import { projectTargetArgsDef, resolveProjectTargetId } from "./shared";
 
 export const dropProjectCommand = defineCommand({
-  meta: { name: "drop", description: "Drop project" },
+  meta: { name: "drop", description: "Drop a project" },
   args: projectTargetArgsDef,
   async run(ctx) {
     await runWithIo(

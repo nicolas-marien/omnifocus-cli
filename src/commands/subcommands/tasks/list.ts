@@ -6,7 +6,7 @@ import { runWithIo } from "../../shared";
 import { listArgsDef, mergeListFilter, parseListStatus } from "./shared";
 
 export const listTasksCommand = defineCommand({
-  meta: { name: "list", description: "List tasks" },
+  meta: { name: "list", description: "List tasks by status and filters" },
   args: listArgsDef,
   async run(ctx) {
     await runWithIo(

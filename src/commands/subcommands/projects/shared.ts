@@ -3,9 +3,21 @@ import { listProjectRefs } from "../../../omni/projects";
 import { formatArg } from "../../shared";
 
 export const projectTargetArgsDef = {
-  id: { type: "string" as const },
-  name: { type: "string" as const },
-  "input-json": { type: "string" as const },
+  id: {
+    type: "string" as const,
+    description: "Project identifier",
+    valueHint: "id",
+  },
+  name: {
+    type: "string" as const,
+    description: "Project name or name fragment",
+    valueHint: "name",
+  },
+  "input-json": {
+    type: "string" as const,
+    description: "JSON payload with id or name",
+    valueHint: "json",
+  },
   ...formatArg,
 };
 

@@ -5,7 +5,7 @@ import { printOutput } from "../../../output";
 import { runWithIo, updateNameArgsDef } from "../../shared";
 
 export const updateTagCommand = defineCommand({
-  meta: { name: "update", description: "Update tag" },
+  meta: { name: "update", description: "Rename a tag" },
   args: updateNameArgsDef,
   async run(ctx) {
     await runWithIo(

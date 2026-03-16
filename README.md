@@ -27,6 +27,24 @@ of projects create|update|complete|pause|resume|drop
 of tags list|create|update
 ```
 
+## Help For Agents
+
+- Human-readable help:
+
+```bash
+of help tasks create
+```
+
+- Machine-readable command metadata:
+
+```bash
+of help --json
+of help tasks create --json
+of help tasks --json --recursive
+```
+
+`--json` returns command metadata including command path, description, args (type, required/default/options/value hints, aliases), and subcommands.
+
 Project status filtering examples:
 
 ```bash

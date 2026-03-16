@@ -5,7 +5,7 @@ import { runWithIo } from "../../shared";
 import { createArgsDef, parseCreateInput } from "./shared";
 
 export const createTaskCommand = defineCommand({
-  meta: { name: "create", description: "Create task" },
+  meta: { name: "create", description: "Create a task with optional dates and tags" },
   args: createArgsDef,
   async run(ctx) {
     await runWithIo(

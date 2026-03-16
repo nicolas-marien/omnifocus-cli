@@ -13,7 +13,11 @@ const projectStatuses = new Set<ProjectStatus>([
 ]);
 
 const listProjectsArgsDef = {
-  status: { type: "string" as const },
+  status: {
+    type: "string" as const,
+    description: "Comma-separated project statuses",
+    valueHint: "active,paused,completed,dropped",
+  },
   ...formatArg,
 };
 
@@ -45,7 +49,7 @@ function parseStatusFilter(value: unknown): ProjectStatus[] | undefined {
 }
 
 export const listProjectsCommand = defineCommand({
-  meta: { name: "list", description: "List projects" },
+  meta: { name: "list", description: "List projects by lifecycle status" },
   args: listProjectsArgsDef,
   async run(ctx) {
     await runWithIo(

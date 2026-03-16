@@ -1,26 +1,57 @@
 import { fail } from "../errors";
 import { OutputMode } from "../output";
 
-export type ArgShape = { type?: "boolean" | "string" | "enum" | "positional"; alias?: string | string[] };
+export type ArgShape = {
+  type?: "boolean" | "string" | "enum" | "positional";
+  alias?: string | string[];
+  description?: string;
+  valueHint?: string;
+  default?: string | boolean;
+  required?: boolean;
+  options?: string[];
+  negativeDescription?: string;
+};
 
 export const formatArg = {
   format: {
     type: "enum" as const,
+    description: "Output format",
+    valueHint: "table|json|ndjson",
     options: ["table", "json", "ndjson"],
     default: "table",
   },
 };
 
 export const createNameArgsDef = {
-  name: { type: "string" as const },
-  "input-json": { type: "string" as const },
+  name: {
+    type: "string" as const,
+    description: "Entity name (required unless --input-json is provided)",
+    valueHint: "name",
+  },
+  "input-json": {
+    type: "string" as const,
+    description: "JSON payload for command input",
+    valueHint: "json",
+  },
   ...formatArg,
 };
 
 export const updateNameArgsDef = {
-  id: { type: "string" as const },
-  name: { type: "string" as const },
-  "input-json": { type: "string" as const },
+  id: {
+    type: "string" as const,
+    description: "Entity identifier",
+    valueHint: "id",
+  },
+  name: {
+    type: "string" as const,
+    description: "New entity name",
+    valueHint: "name",
+  },
+  "input-json": {
+    type: "string" as const,
+    description: "JSON payload for command input",
+    valueHint: "json",
+  },
   ...formatArg,
 };
 

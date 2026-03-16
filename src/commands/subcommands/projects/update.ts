@@ -5,7 +5,7 @@ import { printOutput } from "../../../output";
 import { runWithIo, updateNameArgsDef } from "../../shared";
 
 export const updateProjectCommand = defineCommand({
-  meta: { name: "update", description: "Update project" },
+  meta: { name: "update", description: "Rename a project" },
   args: updateNameArgsDef,
   async run(ctx) {
     await runWithIo(

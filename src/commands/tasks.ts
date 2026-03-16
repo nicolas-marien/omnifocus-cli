@@ -4,7 +4,7 @@ import { createTaskCommand } from "./subcommands/tasks/create";
 import { listTasksCommand } from "./subcommands/tasks/list";
 
 export const tasksCommand = defineCommand({
-  meta: { name: "tasks", description: "Manage tasks" },
+  meta: { name: "tasks", description: "List, create, and complete tasks" },
   subCommands: {
     list: listTasksCommand,
     create: createTaskCommand,

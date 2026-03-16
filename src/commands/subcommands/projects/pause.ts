@@ -6,7 +6,7 @@ import { runWithIo } from "../../shared";
 import { projectTargetArgsDef, resolveProjectTargetId } from "./shared";
 
 export const pauseProjectCommand = defineCommand({
-  meta: { name: "pause", description: "Pause project" },
+  meta: { name: "pause", description: "Pause an active project" },
   args: projectTargetArgsDef,
   async run(ctx) {
     await runWithIo(
