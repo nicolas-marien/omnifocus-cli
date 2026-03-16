@@ -25,6 +25,9 @@ of tasks complete --id <task-id>
 of projects list [--status active|paused|completed|dropped]
 of projects create|update|complete|pause|resume|drop
 of tags list|create|update
+of perspectives list
+of perspectives tasks --id <perspective-id>
+of perspectives tasks --name "Perspective Name"
 ```
 
 ## Help For Agents

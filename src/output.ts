@@ -1,4 +1,4 @@
-import { Project, Tag, Task } from "./types";
+import { Perspective, Project, Tag, Task } from "./types";
 
 export type OutputMode = "table" | "json" | "ndjson";
 
@@ -29,6 +29,11 @@ export function printOutput(data: unknown, mode: OutputMode): void {
     return;
   }
 
+  if (Array.isArray(data) && data.length > 0 && isPerspective(data[0])) {
+    renderPerspectiveTable(data as Perspective[]);
+    return;
+  }
+
   if (Array.isArray(data) && data.length > 0 && isTag(data[0])) {
     renderTagTable(data as Tag[]);
     return;
@@ -49,6 +54,10 @@ function isTag(value: unknown): value is Tag {
   return Boolean(value && typeof value === "object" && "id" in value && "name" in value);
 }
 
+function isPerspective(value: unknown): value is Perspective {
+  return Boolean(value && typeof value === "object" && "id" in value && "name" in value && "kind" in value);
+}
+
 function renderTaskTable(tasks: Task[]): void {
   for (const task of tasks) {
     const state = task.completed ? "completed" : task.dropped ? "dropped" : task.inInbox ? "inbox" : task.blocked ? "blocked" : "available";
@@ -65,5 +74,11 @@ function renderProjectTable(projects: Project[]): void {
 function renderTagTable(tags: Tag[]): void {
   for (const tag of tags) {
     process.stdout.write(`${tag.id}\t${tag.name}\n`);
+  }
+}
+
+function renderPerspectiveTable(perspectives: Perspective[]): void {
+  for (const perspective of perspectives) {
+    process.stdout.write(`${perspective.id}\t${perspective.kind}\t${perspective.name}\n`);
   }
 }

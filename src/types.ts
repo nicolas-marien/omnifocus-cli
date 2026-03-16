@@ -40,6 +40,14 @@ export type Tag = {
   name: string;
 };
 
+export type PerspectiveKind = "builtin" | "custom";
+
+export type Perspective = {
+  id: string;
+  name: string;
+  kind: PerspectiveKind;
+};
+
 export type DateWindow = {
   on?: string;
   before?: string;

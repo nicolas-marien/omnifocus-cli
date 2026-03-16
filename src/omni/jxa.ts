@@ -35,3 +35,15 @@ export async function runJxa<T>(source: string): Promise<T> {
 export function jxaString(value: string): string {
   return JSON.stringify(value);
 }
+
+export async function runOmniJs<T>(source: string): Promise<T> {
+  const scriptLiteral = jxaString(source);
+  return runJxa<T>(`
+const app = Application("OmniFocus");
+const out = app.evaluateJavascript(${scriptLiteral});
+if (typeof out !== "string") {
+  return JSON.stringify(out);
+}
+return out;
+`);
+}
