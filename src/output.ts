@@ -52,8 +52,7 @@ function isTag(value: unknown): value is Tag {
 function renderTaskTable(tasks: Task[]): void {
   for (const task of tasks) {
     const state = task.completed ? "completed" : task.dropped ? "dropped" : task.inInbox ? "inbox" : task.blocked ? "blocked" : "available";
-    const planned = task.plannedAt ? new Date(task.plannedAt).toLocaleString() : "-";
-    process.stdout.write(`${task.id}\t${state}\t${task.name}\tplanned:${planned}\n`);
+    process.stdout.write(`${task.id}\t${state}\t${task.name}\n`);
   }
 }
 
