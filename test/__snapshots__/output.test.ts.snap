@@ -1,0 +1,44 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`printOutput > renders JSON mode with pretty formatting 1`] = `
+"{
+  "ok": true,
+  "count": 2
+}
+"
+`;
+
+exports[`printOutput > renders NDJSON mode for arrays 1`] = `
+"{"id":1}
+{"id":2}
+"
+`;
+
+exports[`printOutput > renders NDJSON mode for single objects 1`] = `
+"{"id":1,"ok":true}
+"
+`;
+
+exports[`printOutput > renders perspective table 1`] = `
+"ps1	builtin	Today
+"
+`;
+
+exports[`printOutput > renders project table 1`] = `
+"p1	active	Website
+"
+`;
+
+exports[`printOutput > renders tag table 1`] = `
+"g1	urgent
+"
+`;
+
+exports[`printOutput > renders task table with state precedence 1`] = `
+"t1	completed	Done
+t2	dropped	Dropped
+t3	inbox	Inbox
+t4	blocked	Blocked
+t5	available	Available
+"
+`;
